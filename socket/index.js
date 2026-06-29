@@ -1,6 +1,9 @@
 const io = require("socket.io")(8800, {
   cors: {
-    origin: "http://localhost:3000",
+    origin: [
+      "http://localhost:3000",
+      "https://social-media-website-git-main-aman-sh-projects1.vercel.app/auth"
+    ]
   },
 });
 
