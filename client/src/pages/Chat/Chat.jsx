@@ -35,11 +35,25 @@ const Chat = () => {
   // Connect to Socket.io
   useEffect(() => {
     socket.current = io("ws://localhost:8800");
-    socket.current.emit("new-user-add", user._id);
-    socket.current.on("get-users", (users) => {
+
+    const handleGetUsers = (users) => {
       setOnlineUsers(users);
-    });
-  }, [user]);
+    };
+
+    socket.current.on("get-users", handleGetUsers);
+
+    return () => {
+      socket.current?.off("get-users", handleGetUsers);
+      socket.current?.disconnect();
+    };
+  }, []);
+
+  // Inform socket about current user
+  useEffect(() => {
+    if (!user?._id) return;
+    socket.current?.emit("new-user-add", user._id);
+  }, [user?._id]);
+
 
   // Send Message to socket server
   useEffect(() => {
@@ -50,13 +64,20 @@ const Chat = () => {
 
   // Get the message from socket server
   useEffect(() => {
-    socket.current.on("recieve-message", (data) => {
-      console.log(data)
-      setReceivedMessage(data);
-    }
+    if (!socket.current) return;
 
-    );
+    const handleReceiveMessage = (data) => {
+      console.log(data);
+      setReceivedMessage(data);
+    };
+
+    socket.current.on("recieve-message", handleReceiveMessage);
+
+    return () => {
+      socket.current?.off("recieve-message", handleReceiveMessage);
+    };
   }, []);
+
 
 
   const checkOnlineStatus = (chat) => {
